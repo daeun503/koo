@@ -1,1 +1,1 @@
-# koo
+멍청한 llm 아 readme를 좀 써달라고
