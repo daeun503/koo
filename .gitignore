@@ -437,4 +437,4 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,django,python,pycharm,windows
 
-infra/milvus/volumes/
+infra/vector_store/milvus/docker/volumes/

@@ -41,7 +41,7 @@ etcd:
     #  - "stderr" as os.Stderr,
     #  - "stdout" as os.Stdout,
     #  - file path to append server logs to.
-    # please adjust in embedded Milvus: /tmp/milvus/logs/etcd.log
+    # please adjust in embedded Milvus: /tmp/vector_store/logs/etcd.log
     path: stdout
   ssl:
     enabled: false # Whether to support ETCD secure connection mode
@@ -58,7 +58,7 @@ etcd:
   use:
     embed: false # Whether to enable embedded Etcd (an in-process EtcdServer).
   data:
-    dir: default.etcd # Embedded Etcd only. please adjust in embedded Milvus: /tmp/milvus/etcdData/
+    dir: default.etcd # Embedded Etcd only. please adjust in embedded Milvus: /tmp/vector_store/etcdData/
   auth:
     enabled: false # Whether to enable authentication
     userName:  # username for etcd authentication
@@ -91,7 +91,7 @@ localStorage:
   # Local path to where vector data are stored during a search or a query to avoid repetitve access to MinIO or S3 service.
   # Caution: Changing this parameter after using Milvus for a period of time will affect your access to old data.
   # It is recommended to change this parameter before starting Milvus for the first time.
-  path: /var/lib/milvus/data/
+  path: /var/lib/vector_store/data/
 
 # Related configuration of MinIO/S3/GCS or any other service supports S3 API, which is responsible for data persistence for Milvus.
 # We refer to the storage service as MinIO/S3 in the following description for simplicity.
@@ -238,14 +238,14 @@ pulsar:
   tenant: public
   namespace: default # A Pulsar namespace is the administrative unit nomenclature within a tenant.
   requestTimeout: 60 # pulsar client global request timeout in seconds
-  enableClientMetrics: true # Whether to register pulsar client metrics into milvus metrics path.
+  enableClientMetrics: true # Whether to register pulsar client metrics into vector_store metrics path.
   # Perform a backlog cleanup every time the data of given bytes is written.
-  # Because milvus use puslar reader to read the message, so if there's no pulsar subscriber when milvus running.
+  # Because vector_store use puslar reader to read the message, so if there's no pulsar subscriber when vector_store running.
   # If the pulsar cluster open the backlog protection (backlogQuotaDefaultLimitBytes), the backlog exceed will reported to fail the write operation
   # set this option to non-zero will create a subscription seek to latest position to clear the pulsar backlog.
   # If these options is non-zero, the wal data in pulsar is fully protected by retention policy,
   # so admin of pulsar should give enough retention time to avoid the wal message lost.
-  # If these options is zero, no subscription will be created, so pulsar cluster must close the backlog protection, otherwise the milvus can not recovered if backlog exceed.
+  # If these options is zero, no subscription will be created, so pulsar cluster must close the backlog protection, otherwise the vector_store can not recovered if backlog exceed.
   # If this option is zero or negative, it will be ignored and the default value (100m) will be used.
   backlogAutoClearBytes: 100m
 
@@ -270,7 +270,7 @@ rocksmq:
   # Caution: Changing this parameter after using Milvus for a period of time will affect your access to old data.
   # It is recommended to change this parameter before starting Milvus for the first time.
   # Set an easy-to-identify root key prefix for Milvus if etcd service already exists.
-  path: /var/lib/milvus/rdb_data
+  path: /var/lib/vector_store/rdb_data
   lrucacheratio: 0.06 # rocksdb cache memory ratio
   rocksmqPageSize: 67108864 # The maximum size of messages in each page in RocksMQ. Messages in RocksMQ are checked and cleared (when expired) in batch based on this parameters. Unit: Byte.
   retentionTimeInMinutes: 4320 # The maximum retention time of acked messages in RocksMQ. Acked messages in RocksMQ are retained for the specified period of time and then cleared. Unit: Minute.
@@ -1255,7 +1255,7 @@ trace:
 #here, you can set the size of the memory occupied by the memory pool, with the unit being MB.
 #note that there is a possibility of Milvus crashing when the actual memory demand exceeds the value set by maxMemSize.
 #if initMemSize and MaxMemSize both set zero,
-#milvus will automatically initialize half of the available GPU memory,
+#vector_store will automatically initialize half of the available GPU memory,
 #maxMemSize will the whole available GPU memory.
 gpu:
   initMemSize: 2048 # Gpu Memory Pool init size
@@ -1467,4 +1467,4 @@ function:
           enable: true # Whether to enable voyageai model service
           url:  # Your voyageai rerank url, Default is the official rerank url
   analyzer:
-    local_resource_path: /var/lib/milvus/analyzer
+    local_resource_path: /var/lib/vector_store/analyzer
