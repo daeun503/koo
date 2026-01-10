@@ -2,24 +2,31 @@ from dependency_injector import containers, providers
 
 from app.services import AskService, IngestService
 from config import settings
-from container.ingestor_factory import IngestorFactory
+from container.factory import IngestorFactory, LLMFactory
 from infra.db.impl import ChunkRepositoryImpl, DocumentRepositoryImpl, QueryLogRepositoryImpl
-from infra.llm.impl import Answerer, Embedder
 from infra.vector_store.milvus.impl import MilvusRepositoryImpl
 
 
 class Container(containers.DeclarativeContainer):
+    # --- Factories ---
+    llm_factory = providers.Singleton(LLMFactory)
+    ingestor_factory = providers.Singleton(IngestorFactory)
+
     # --- LLM / Embedding ---
-    embedder = providers.Singleton(Embedder, model=settings.EMBEDDING_PROVIDER)
-    answerer = providers.Singleton(Answerer, model=settings.LLM_PROVIDER)
+    embedder = providers.Factory(
+        lambda factory: factory.create_embedder(settings.EMBEDDING_PROVIDER),
+        factory=llm_factory,
+    )
+    answerer = providers.Factory(
+        lambda factory: factory.create_answerer(settings.LLM_PROVIDER),
+        factory=llm_factory,
+    )
 
     # --- Repositories ---
     chunk_repo = providers.Singleton(ChunkRepositoryImpl)
     document_repo = providers.Singleton(DocumentRepositoryImpl)
     query_log_repo = providers.Singleton(QueryLogRepositoryImpl)
     milvus = providers.Singleton(MilvusRepositoryImpl)
-
-    ingestor_factory = providers.Singleton(IngestorFactory)
 
     # --- Pipeline / Services ---
     ingest_service = providers.Factory(
