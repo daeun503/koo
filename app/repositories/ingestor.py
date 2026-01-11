@@ -8,7 +8,7 @@ from app.models.base import Chunk, Document
 
 class Ingestor(ABC):
     source_type: SourceType
-    _MD_HEADING_RE: ClassVar[re.Pattern[str]] = re.compile(r"^(#{1,3})\s+")
+    _MD_HEADING_RE: ClassVar[re.Pattern[str]]] = re.compile(r"^(#{1,3})\s+")
 
     def __init__(
         self,
@@ -21,6 +21,11 @@ class Ingestor(ABC):
         self.source_id = source_id
         self.title = title
         self.content = content
+
+        try:
+            return self.image_text_extractor.extract(image)
+        except Exception:
+            return ""
 
     @abstractmethod
     def build_document(self) -> Document: ...

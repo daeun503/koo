@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_API_KEY: str | None = None
 
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_API_KEY: str | None = None
+
     # Notion
     NOTION_API_TOKEN: str | None = None
 

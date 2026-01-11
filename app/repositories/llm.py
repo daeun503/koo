@@ -22,6 +22,9 @@ class Answerer(ABC):
     @abstractmethod
     def answer(self, question: str, contexts: list[VectorSearchChunk]) -> tuple[Output, RunUsage]: ...
 
+    @abstractmethod
+    def summarize_image(self, image: bytes | str) -> str: ...
+
     def _build_context(self, contexts: list[VectorSearchChunk], max_chars: int = 6000) -> str:
         parts: list[str] = []
         total = 0

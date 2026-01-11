@@ -3,6 +3,7 @@ from typing import Any, Iterable
 from app.enums import SourceType
 from app.models.base import Document
 from app.repositories.ingestor import Ingestor
+from app.repositories.llm import Answerer
 from config import settings
 from infra.notion.client import NotionClient
 
@@ -10,8 +11,9 @@ from infra.notion.client import NotionClient
 class NotionIngestor(Ingestor):
     source_type = SourceType.NOTION
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, llm: Answerer | None = None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.llm = llm
 
         if not settings.NOTION_API_TOKEN:
             raise ValueError("NOTION_API_TOKEN is not set in settings.")
@@ -104,9 +106,21 @@ class NotionIngestor(Ingestor):
 
         data = (block or {}).get(btype) or {}
 
-        # ✅ 이미지/미디어/링크 블록은 제거 (텍스트만 추출)
+        # 이미지 블록 처리
+        if btype == "image":
+            if self.llm:
+                image_url = self._extract_image_url(data)
+                if image_url:
+                    try:
+                        summary = self.llm.summarize_image(image_url)
+                        if summary:
+                            return f"### 이미지 내용\n{summary}"
+                    except Exception:
+                        return None
+            return None
+
+        # ✅ 기타 미디어/링크 블록은 제거 (텍스트만 추출)
         if btype in {
-            "image",
             "video",
             "file",
             "pdf",
@@ -185,6 +199,13 @@ class NotionIngestor(Ingestor):
             text = self._rich_text_to_plain(rt).strip()
             return text or None
         return None
+
+    def _extract_image_url(self, image_data: dict[str, Any]) -> str | None:
+        file = image_data.get("file") or {}
+        external = image_data.get("external") or {}
+
+        url = file.get("url") or external.get("url")
+        return url
 
     def _rich_text_to_plain(self, rich_text: list[dict[str, Any]]) -> str:
         parts: list[str] = []

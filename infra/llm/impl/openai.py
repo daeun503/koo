@@ -57,3 +57,44 @@ class OpenaiAnswerer(AnswererRepository):
 
         result = self._agent.run_sync(prompt)
         return result.output, result.usage()
+
+    def summarize_image(self, image: bytes | str) -> str:
+        """
+        이미지를 한국어로 1~2문장으로 요약해줘.
+
+        핵심 키워드, 주제, 등장하는 개체명(사람/장소/제품 등)과 중요한 텍스트(표지, 간판, 인쇄물 등)가 있으면 포함해줘.
+        요약 내용은 나중에 벡터서치로 검색될 때 최대한 의미있게 해줘.
+        """
+        from pydantic_ai import BinaryContent, ImageUrl
+        import base64
+
+        agent = Agent(
+            settings.LLM_MODEL,
+            system_prompt="당신은 이미지에서 텍스트를 정확하게 추출하는 전문가입니다.",
+        )
+
+        if isinstance(image, str) and image.startswith(("http://", "https://")):
+            result = agent.run_sync(
+                [
+                    "이미지를 한국어로 1~2문장으로 요약해줘. "
+                    "핵심 키워드, 주제, 등장하는 개체명(사람/장소/제품 등)과 중요한 텍스트(표지, 간판, 인쇄물 등)가 있으면 포함해줘. "
+                    "요약 내용은 나중에 벡터서치로 검색될 때 최대한 의미있게 해줘.",
+                    ImageUrl(url=image),
+                ]
+            )
+        else:
+            if isinstance(image, str):
+                image_bytes = base64.b64decode(image)
+            else:
+                image_bytes = image
+
+            result = agent.run_sync(
+                [
+                    "이미지를 한국어로 1~2문장으로 요약해줘. "
+                    "핵심 키워드, 주제, 등장하는 개체명(사람/장소/제품 등)과 중요한 텍스트(표지, 간판, 인쇄물 등)가 있으면 포함해줘. "
+                    "요약 내용은 나중에 벡터서치로 검색될 때 최대한 의미있게 해줘.",
+                    BinaryContent(data=image_bytes, media_type="image/jpeg"),
+                ]
+            )
+
+        return result.output

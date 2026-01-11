@@ -22,6 +22,16 @@ class Container(containers.DeclarativeContainer):
         factory=llm_factory,
     )
 
+    # --- LLM / Embedding ---
+    embedder = providers.Factory(
+        lambda factory: factory.create_embedder(settings.EMBEDDING_PROVIDER),
+        factory=llm_factory,
+    )
+    answerer = providers.Factory(
+        lambda factory: factory.create_answerer(settings.LLM_PROVIDER),
+        factory=llm_factory,
+    )
+
     # --- Repositories ---
     chunk_repo = providers.Singleton(ChunkRepositoryImpl)
     document_repo = providers.Singleton(DocumentRepositoryImpl)
